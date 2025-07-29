@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installment Management Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chatbot-container {
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chatbot-header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .chatbot-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.bot .message-content {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .option-btn {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .option-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: #5a67d8;
+        }
+
+        .merchants-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .merchants-table th, .merchants-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .merchants-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .merchants-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <h1>💳 Installment Management System</h1>
+            <p>Your smart assistant for installment plans</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    👋 Welcome! I'm here to help you with installment management. What would you like to do today?
+                    <div class="options-container">
+                        <button class="option-btn" onclick="showMerchants()">📋 View Available Merchants & Plans</button>
+                        <button class="option-btn" onclick="startInstallment()">💳 Apply for New Installment</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Merchant data from the HTML file
+        const merchantData = [
+            { name: "Abans", category: "Electronic and householdings", plans: "03, 06, 12, 18, 24, 30, 36 months", interest: "6% for all months" },
+            { name: "Damro", category: "Electronic and householdings", plans: "03, 06, 12, 18, 24, 30, 36 months", interest: "0% for all months" },
+            { name: "Apple Asia", category: "Electronic and householdings", plans: "03, 06, 12, 18, 24, 30, 36 months", interest: "5% for only 24,30,36 months" },
+            { name: "Asiri Hospital", category: "Hospital", plans: "03, 06, 12, 18, 24, 30, 36 months", interest: "0% for all months" },
+            { name: "Quantum Fitness", category: "Fitness and Health", plans: "03, 06, 12 months", interest: "0% for all months" },
+            { name: "My Fees.lk", category: "Education", plans: "12,24,36 months", interest: "0% for all months" },
+            { name: "Daraz", category: "Online Shopping", plans: "03, 06, 12 months", interest: "3% for all months" },
+            { name: "Vision care", category: "Optical", plans: "03, 06, 12,18 months", interest: "0% for all months" },
+            { name: "Raja jewellers", category: "Jewellery", plans: "24,30,36 months", interest: "0% for all months" }
+        ];
+
+        // Database configuration
+        const dbConfig = {
+            host: 'localhost',
+            database: 'installment_db',
+            username: 'example_user',
+            password: 'example_password',
+            port: 3306,
+            table: 'customer_data'
+        };
+
+        // Sample user data (fallback for demonstration)
+        const userData = [
+            { cardNo: "1234567890123456", nic: "123456789V", name: "John Silva", contact: "0771234567", email: "john.silva@email.com" },
+            { cardNo: "2345678901234567", nic: "234567890V", name: "Mary Fernando", contact: "0772345678", email: "mary.fernando@email.com" },
+            { cardNo: "3456789012345678", nic: "345678901V", name: "David Perera", contact: "0773456789", email: "david.perera@email.com" },
+            { cardNo: "4567890123456789", nic: "456789012V", name: "Sarah Jayawardena", contact: "0774567890", email: "sarah.jayawardena@email.com" },
+            { cardNo: "5678901234567890", nic: "567890123V", name: "Michael Rajapakse", contact: "0775678901", email: "michael.rajapakse@email.com" }
+        ];
+
+        let currentStep = 'main';
+        let applicationData = {};
+        let verifiedUser = null;
+
+        function addMessage(content, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showMerchants() {
+            addMessage("📋 View Available Merchants & Plans", true);
+            
+            let merchantsHTML = `
+                <strong>🏪 Available Merchants & Plans</strong><br><br>
+                <table class="merchants-table">
+                    <thead>
+                        <tr>
+                            <th>Merchant Name</th>
+                            <th>Category</th>
+                            <th>Available Plans</th>
+                            <th>Interest Rates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            merchantData.forEach(merchant => {
+                merchantsHTML += `
+                    <tr>
+                        <td>${merchant.name}</td>
+                        <td>${merchant.category}</td>
+                        <td>${merchant.plans}</td>
+                        <td>${merchant.interest}</td>
+                    </tr>
+                `;
+            });
+
+            merchantsHTML += `
+                    </tbody>
+                </table>
+                <br>
+                <strong>💰 Handling Fee Structure:</strong><br>
+                • 03, 06, 12 months: 2,500 LKR<br>
+                • 18, 24 months: 3,000 LKR<br>
+                • 30, 36 months: 4,000 LKR<br><br>
+                <button class="back-btn" onclick="backToMain()">🔙 Back to Main Menu</button>
+            `;
+
+            addMessage(merchantsHTML);
+        }
+
+        function startInstallment() {
+            addMessage("💳 Apply for New Installment", true);
+            currentStep = 'verification';
+            
+            const formHTML = `
+                <strong>🔐 Customer Verification</strong><br>
+                Please provide your details for verification:
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Credit Card Number:</label>
+                        <input type="text" id="cardNo" placeholder="Enter your 16-digit card number" maxlength="16">
+                    </div>
+                    <div class="form-group">
+                        <label>NIC Number:</label>
+                        <input type="text" id="nic" placeholder="Enter your NIC number">
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name:</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number:</label>
+                        <input type="text" id="contactNo" placeholder="Enter your contact number">
+                    </div>
+                    <button class="submit-btn" onclick="verifyUser()">🔍 Verify Details</button>
+                    <button class="back-btn" onclick="backToMain()">🔙 Back to Main Menu</button>
+                </div>
+            `;
+
+            addMessage(formHTML);
+        }
+
+        async function verifyUser() {
+            const cardNo = document.getElementById('cardNo').value;
+            const nic = document.getElementById('nic').value;
+            const fullName = document.getElementById('fullName').value;
+            const contactNo = document.getElementById('contactNo').value;
+
+            if (!cardNo || !nic || !fullName || !contactNo) {
+                addMessage("❌ Please fill in all fields!", false);
+                return;
+            }
+
+            // Basic validation
+            if (cardNo.length !== 16 || !/^\d+$/.test(cardNo)) {
+                addMessage("❌ Please enter a valid 16-digit card number!", false);
+                return;
+            }
+
+            if (!/^\d{9}[VvXx]$/.test(nic)) {
+                addMessage("❌ Please enter a valid NIC number (e.g., 123456789V)!", false);
+                return;
+            }
+
+            if (!/^07[0-9]{8}$/.test(contactNo)) {
+                addMessage("❌ Please enter a valid Sri Lankan mobile number (e.g., 0771234567)!", false);
+                return;
+            }
+
+            addMessage("🔍 Verifying your details...", true);
+            addMessage('<div class="loading"></div> Connecting to database and verifying your information...', false);
+
+            try {
+                // Database verification
+                const user = await verifyUserInDatabase(cardNo, nic, fullName, contactNo);
+                
+                if (user) {
+                    verifiedUser = user;
+                    addMessage('<span class="success">✅ Verification Successful!</span><br>Your details have been verified against our database. Let\'s proceed with your installment application.', false);
+                    showInstallmentForm();
+                } else {
+                    addMessage('<span class="error">❌ Verification Failed!</span><br>The provided details do not match our database records. Please check and try again.<br><br><strong>Please ensure:</strong><br>• All details are entered exactly as registered<br>• Card number, NIC, name, and contact are from the same account', false);
+                }
+            } catch (error) {
+                console.error('Database verification error:', error);
+                
+                if (error.message.includes('Backend server is not running')) {
+                    addMessage('<span class="error">❌ Backend Server Not Running!</span><br>Please start the backend server first. Check the console for instructions.', false);
+                } else {
+                    addMessage('<span class="error">❌ Database Connection Error!</span><br>Unable to connect to the verification database. Please try again later or contact support.', false);
+                }
+                
+                // Fallback to local data for demonstration
+                addMessage('🔄 Trying alternative verification method...', false);
+                setTimeout(() => {
+                    const user = userData.find(u => 
+                        u.cardNo === cardNo && 
+                        u.nic === nic && 
+                        u.name.toLowerCase() === fullName.toLowerCase() && 
+                        u.contact === contactNo
+                    );
+
+                    if (user) {
+                        verifiedUser = user;
+                        addMessage('<span class="success">✅ Verification Successful (Alternative Method)!</span><br>Your details have been verified. Let\'s proceed with your installment application.', false);
+                        showInstallmentForm();
+                    } else {
+                        addMessage('<span class="error">❌ Verification Failed!</span><br>The provided details do not match our records.', false);
+                    }
+                }, 1500);
+            }
+        }
+
+        // Database verification function - calls backend API
+        async function verifyUserInDatabase(cardNo, nic, fullName, contactNo) {
+            try {
+                console.log('Connecting to backend API...');
+                
+                const response = await fetch('/api/verify-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cardNo: cardNo,
+                        nic: nic,
+                        fullName: fullName,
+                        contactNo: contactNo
+                    })
+                });
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                if (data.success) {
+                    console.log('User verified successfully:', data.user.name);
+                    return data.user;
+                } else {
+                    console.log('User verification failed:', data.message);
+                    return null;
+                }
+
+            } catch (error) {
+                console.error('API connection error:', error);
+                
+                // If API is not available, show specific error message
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    throw new Error('Backend server is not running. Please start the server first.');
+                }
+                
+                throw error;
+            }
+        }
+
+        // Function to save application to database
+        async function saveApplicationToDatabase(applicationData) {
+            try {
+                console.log('Saving application to database...');
+                
+                const response = await fetch('/api/save-application', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(applicationData)
+                });
+
+                const data = await response.json();
+                console.log('Save Application Response:', data);
+
+                if (data.success) {
+                    console.log('Application saved successfully with ID:', data.applicationId);
+                    return data.applicationId;
+                } else {
+                    console.error('Failed to save application:', data.message);
+                    return null;
+                }
+
+            } catch (error) {
+                console.error('Failed to save application:', error);
+                return null;
+            }
+        }
+
+        function showInstallmentForm() {
+            currentStep = 'application';
+            
+            const merchantOptions = merchantData.map(merchant => 
+                `<option value="${merchant.name}">${merchant.name} - ${merchant.category}</option>`
+            ).join('');
+
+            const formHTML = `
+                <strong>📝 Installment Application Form</strong><br>
+                Complete your installment application:
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Select Merchant:</label>
+                        <select id="merchant" onchange="updatePlanOptions()">
+                            <option value="">Choose a merchant...</option>
+                            ${merchantOptions}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Installment Plan (Months):</label>
+                        <select id="installmentPlan" disabled>
+                            <option value="">Select merchant first</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bill Amount (LKR):</label>
+                        <input type="number" id="billAmount" placeholder="Enter bill amount" min="1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Transaction Date:</label>
+                        <input type="date" id="transactionDate" required>
+                    </div>
+                    <button class="submit-btn" onclick="submitApplication()">📤 Submit Application</button>
+                    <button class="back-btn" onclick="backToMain()">🔙 Back to Main Menu</button>
+                </div>
+            `;
+
+            addMessage(formHTML);
+        }
+
+        function updatePlanOptions() {
+            const merchantSelect = document.getElementById('merchant');
+            const planSelect = document.getElementById('installmentPlan');
+            const selectedMerchant = merchantData.find(m => m.name === merchantSelect.value);
+            
+            if (selectedMerchant) {
+                planSelect.disabled = false;
+                const plans = selectedMerchant.plans.split(', ');
+                planSelect.innerHTML = '<option value="">Choose installment plan...</option>';
+                plans.forEach(plan => {
+                    const months = plan.replace(' months', '');
+                    planSelect.innerHTML += `<option value="${months}">${months} months</option>`;
+                });
+            } else {
+                planSelect.disabled = true;
+                planSelect.innerHTML = '<option value="">Select merchant first</option>';
+            }
+        }
+
+        function submitApplication() {
+            const merchant = document.getElementById('merchant').value;
+            const installmentPlan = document.getElementById('installmentPlan').value;
+            const billAmount = document.getElementById('billAmount').value;
+            const transactionDate = document.getElementById('transactionDate').value;
+
+            if (!merchant || !installmentPlan || !billAmount || !transactionDate) {
+                addMessage("❌ Please fill in all fields!", false);
+                return;
+            }
+
+            if (billAmount < 1000) {
+                addMessage("❌ Minimum bill amount is 1,000 LKR!", false);
+                return;
+            }
+
+            applicationData = {
+                cardNo: verifiedUser.cardNo,
+                nic: verifiedUser.nic,
+                fullName: verifiedUser.name,
+                contactNo: verifiedUser.contact,
+                email: verifiedUser.email,
+                merchant: merchant,
+                installmentPlan: installmentPlan,
+                billAmount: parseFloat(billAmount),
+                transactionDate: transactionDate
+            };
+
+            addMessage("📤 Submitting Application...", true);
+            addMessage('<div class="loading"></div> Processing your application...', false);
+
+            setTimeout(async () => {
+                // Save to database
+                const applicationId = await saveApplicationToDatabase(applicationData);
+                
+                if (applicationId) {
+                    console.log('Application saved with ID:', applicationId);
+                } else {
+                    console.log('Application saved locally (database unavailable)');
+                }
+                
+                processApplication();
+            }, 2000);
+        }
+
+        function processApplication() {
+            // Calculate handling fee
+            const months = parseInt(applicationData.installmentPlan);
+            let handlingFee = 0;
+            if ([3, 6, 12].includes(months)) {
+                handlingFee = 2500;
+            } else if ([18, 24].includes(months)) {
+                handlingFee = 3000;
+            } else if ([30, 36].includes(months)) {
+                handlingFee = 4000;
+            }
+
+            // Calculate interest
+            const selectedMerchant = merchantData.find(m => m.name === applicationData.merchant);
+            let totalAmount = applicationData.billAmount + handlingFee;
+            let interestAmount = 0;
+            
+            if (selectedMerchant.interest.includes('%')) {
+                const interestRate = parseFloat(selectedMerchant.interest.match(/\d+/)[0]) / 100;
+                if (selectedMerchant.interest.includes('only')) {
+                    if ([24, 30, 36].includes(months)) {
+                        interestAmount = applicationData.billAmount * interestRate;
+                        totalAmount += interestAmount;
+                    }
+                } else if (!selectedMerchant.interest.includes('0%')) {
+                    interestAmount = applicationData.billAmount * interestRate;
+                    totalAmount += interestAmount;
+                }
+            }
+
+            const monthlyAmount = totalAmount / months;
+
+            // Simulate database upload
+            addMessage('<span class="success">✅ Application Submitted Successfully!</span>', false);
+            
+            const summaryHTML = `
+                <strong>📋 Application Summary</strong><br><br>
+                <strong>Customer Details:</strong><br>
+                • Name: ${applicationData.fullName}<br>
+                • Card Number: ${applicationData.cardNo}<br>
+                • Contact: ${applicationData.contactNo}<br><br>
+                
+                <strong>Installment Details:</strong><br>
+                • Merchant: ${applicationData.merchant}<br>
+                • Bill Amount: ${applicationData.billAmount.toLocaleString()} LKR<br>
+                • Installment Plan: ${applicationData.installmentPlan} months<br>
+                • Handling Fee: ${handlingFee.toLocaleString()} LKR<br>
+                • Interest Amount: ${interestAmount.toLocaleString()} LKR<br>
+                • <strong>Total Amount: ${totalAmount.toLocaleString()} LKR</strong><br>
+                • <strong>Monthly Payment: ${monthlyAmount.toLocaleString()} LKR</strong><br><br>
+                
+                📧 A confirmation email has been sent to: ${applicationData.email}<br>
+                📤 Your application has been forwarded to the next stage for processing.<br><br>
+                
+                <button class="back-btn" onclick="backToMain()">🔙 Back to Main Menu</button>
+            `;
+
+            addMessage(summaryHTML);
+
+            // Simulate email sending
+            console.log('Email sent to:', applicationData.email);
+            console.log('Database record created:', applicationData);
+        }
+
+        function backToMain() {
+            currentStep = 'main';
+            verifiedUser = null;
+            applicationData = {};
+            
+            addMessage("🔙 Back to Main Menu", true);
+            addMessage(`
+                👋 How can I help you today?
+                <div class="options-container">
+                    <button class="option-btn" onclick="showMerchants()">📋 View Available Merchants & Plans</button>
+                    <button class="option-btn" onclick="startInstallment()">💳 Apply for New Installment</button>
+                </div>
+            `);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+CREATE DATABASE IMS_throwhorse;
+USE IMS_throwhorse;
+
+CREATE TABLE customer_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    card_number VARCHAR(16) NOT NULL,
+    nic VARCHAR(20) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    contact_number VARCHAR(15) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE installment_applications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    card_number VARCHAR(16) NOT NULL,
+    nic VARCHAR(20) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    contact_number VARCHAR(15) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    merchant VARCHAR(100) NOT NULL,
+    installment_plan INT NOT NULL,
+    bill_amount DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert sample data
+INSERT INTO customer_data (card_number, nic, full_name, contact_number, email) VALUES 
+('1234567890123456', '123456789V', 'John Silva', '0771234567', 'john.silva@email.com'),
+('2345678901234567', '234567890V', 'Mary Fernando', '0772345678', 'mary.fernando@email.com');
