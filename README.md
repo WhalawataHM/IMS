@@ -13,7 +13,7 @@ The system consists of four main components:
 ### 1. **Chatbot System** (`/chatbot/`)
 - **Purpose**: Customer-facing interface for installment plan applications
 - **Features**:
-  - Customer data collection (card number, NIC, merchant details, bill amount)
+  - Customer data collection (card number, NIC, merchant details, bill amount,etc..)
   - Direct installment plan submission
   - User-friendly conversational interface
 - **Technology**: Node.js, Express, MySQL
