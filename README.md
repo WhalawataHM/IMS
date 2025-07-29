@@ -175,5 +175,5 @@ For technical support or questions about the IMS system, please contact the deve
 ---
 
 **Version**: 1.0.0  
-**Last Updated**: 2024  
-**License**: ISC
+**Last Updated**: 2025
+
