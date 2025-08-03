@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "ims-ai-analytics",
+  "version": "1.0.0",
+  "description": "AI-Powered Analytics Service for IMS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mysql2": "^2.3.3",
+    "cors": "^2.8.5",
+    "@tensorflow/tfjs-node": "^4.10.0",
+    "moment": "^2.29.4"
+  }
+}
